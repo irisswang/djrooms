@@ -1,0 +1,431 @@
+/***************** Overall structure of each page ********************/
+html, body {
+  height: 100%;
+}
+
+.form-group, .form-control {width : 100%;}
+
+.transparent {
+  zoom: 1;
+  filter: alpha(opacity=50);
+  opacity: 0.5;
+  }
+
+#header_container{
+  width: 100%;
+  height: 100px; 
+  display: flex;
+  background-color: #2F2F2F;
+  justify-content: space-between;
+}
+
+#form_container{
+  /* width: 100%; */
+  /* height: fit-content; */
+  background-color:#2F2F2F;
+}
+
+#body_container{
+  width: 100%;
+  height: 100%;
+  background-color: #2F2F2F;
+}
+
+
+/************ For the headers on each page ***************/
+#id_name_of_page{
+  font-size: 30px; 
+  font-weight: bold;
+  margin-bottom: auto;
+  margin-top:auto;
+  color: white;
+  margin-left: 5%; 
+}
+
+#id_profile_text{
+  color: white;
+  font-weight: 300;
+  display: inline-block;
+}
+
+/* DROP DOWN NAVIGATION CSS */
+/* Got css of the drop down button from w3 schools and modified some of the features*/
+.dropbtn {
+  background-color: #2F2F2F;
+  color: black;
+  /* padding: 5px 10px; */
+  margin-top: 10px;
+  /* font-size: 16px; */
+  border: none;
+}
+
+/* The container <div> - needed to position the dropdown content */
+#button_drop {
+  display: flex;
+  width: 40px;
+  height: 40px;
+  margin-bottom: 10px;
+  display: inline-block;
+}
+
+.dropdown {
+  position: relative;
+  margin-top: 20px;
+  margin-right: 3%;
+}
+
+/* Dropdown Content (Hidden by Default) */
+.dropdown-content {
+  right: 0;
+  display: none;
+  position: absolute;
+  background-color: white;
+  min-width: 160px;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  z-index: 1;
+}
+
+/* Links inside the dropdown */
+.dropdown-content a {
+  color: black;
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+}
+
+/* Change color of dropdown links on hover */
+.dropdown-content a:hover {background-color: #C4C4C4;}
+
+/* Show the dropdown menu on hover */
+.dropdown:hover .dropdown-content {display: block;}
+
+/* Change the background color of the dropdown button when the dropdown content is shown */
+.dropdown:hover .dropbtn {background-color: #2F2F2F;}
+
+/*********** Individual DJ ROOM ************/
+.card {
+  margin-left: 70px;
+  margin-top: 20px;
+  margin-bottom: 10px;
+  border-radius: 20px;
+}
+
+#currsong-img {
+  border-radius: 20px 20px 0px 0px;
+}
+
+.card-title {
+  font-size: 20px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.glyphicon {
+  font-size: 35px;
+}
+
+.progress {
+  height: 2px;
+  margin-top: 30px;
+  margin-bottom: 20px;
+}
+
+#card-container{
+  float:left;
+  height: fit-content;
+  background-color: #2F2F2F;
+}
+
+#card-title{
+  position:relative;
+  text-align: center;
+
+}
+
+#room-name-submit{
+  width:60px;
+}
+
+
+label{
+  font-size:20px;
+  position: relative;
+  text-align: center;
+  
+}
+
+
+
+
+#queue-container{
+  float:left;
+  margin-left: 50px;
+  width: 400px;
+  height: 100px;
+  margin-top: 50px;
+  font-size:15px;
+  justify-content: center;
+  border-radius: 10px;
+}
+
+#queue_title_box{
+  position: absolute;
+  padding-left: 25px;
+  padding-right: 25px;
+  padding-bottom: 5px;
+  padding-top: 5px;
+  width: fit-content;
+  height: fit-content;
+  border-radius: 15px 15px 0px 0px;
+  background-image: linear-gradient(to right,#93F8FF 0%, #93FFCB 100%);
+}
+
+#queue_songs{
+  display: flex;
+  height: 100px;
+  border-top-right-radius: 10px;
+  background-color: #BBBBBB;
+}
+
+#id_search_input{
+  height: 50px; 
+  width: 400px;
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
+  background-color: white;
+  background-image: url('https://cdn0.iconfinder.com/data/icons/30-hardware-line-icons/64/Search-512.png'); /* Add a search icon to input */
+  background-position: 10px 12px; /* Position the search icon */
+  background-repeat: no-repeat; /* Do not repeat the icon image */
+  font-size: 16px; /* Increase font-size */
+  padding: 12px 20px 12px 20px; /* Add some padding */
+  border: 1px solid #ddd; /* Add a grey border */
+}
+
+.list-group-item {
+  background-color: #BBBBBB;
+  border-width: 0px;
+  width: 400px;
+}
+
+#queue_search_box{
+  height: 50px; 
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
+  background-color: white;
+}
+.queue-title{
+  font-size:25px;
+  font-weight:bold;
+  color: white;
+
+}
+#queue_title_box{
+  margin-top:-30px;
+}
+
+#msg_input{
+  width:10px;
+  margin-left: 20px;
+}
+
+#chat-bar{
+  margin-left: 80px;
+}
+
+#chat-container{
+  /* width: 200px; */
+  /* height: 100px; */
+  font-size:15px;
+  margin-top: 50px;
+  margin-left: 50px;
+  justify-content: center;
+}
+
+#chat-log{
+  padding: 10px;
+  border-width: 0;
+  border-top-right-radius: 10px;
+}
+
+#chat-message-input{
+  width: 100%;
+  background-color: #C4C4C4;
+  border-width: 0;
+  padding: 10px;
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
+}
+
+#chat-message-submit{
+  color: black;
+
+}
+
+#search_results {
+  width: 400px;
+  height: 200px;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  overflow-y: hidden;
+  z-index:100;
+  padding-inline-start: 0px;  
+}
+
+.class_search_results {
+  /* Remove default list styling */
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+  width: 400px;
+  overflow: hidden;
+}
+
+.search_title {
+  /* border: 1px solid #ddd; Add a border to all links */
+  margin-top: -1px; /* Prevent double borders */
+  background-color: white; /* Grey background color */
+  padding: 17px; /* Add some padding */
+  text-decoration: none; /* Remove default text underline */
+  font-size: 12px; /* Increase the font-size */
+  color: black !important; /* Add a black text color */
+  display: block; /* Make it into a block element to fill the whole list */
+}
+
+.search_title:hover:not(.header) {
+  background-color: #eee; /* Add a hover effect to all links, except for headers */
+}
+
+
+
+#DJRoom_container{
+  width: 100%;
+  height: 100%;
+  display: flex;
+}
+
+/************** Home Page ****************/
+#signin-button-container{
+  margin-top: 30px;
+}
+
+#signin-button{
+  /* margin-top: 10px; */
+  padding: 10px 40px 10px 40px;
+  border-radius: 30px;
+  border-width: 0px;
+  color: black;
+  font-size: 20px;
+  font-weight: 200;
+  background-image: linear-gradient(to right,#93F8FF 0%, #93FFCB 100%);
+  text-decoration: none;
+}
+
+#login_container{
+  /* display: flex; */
+  text-align: center;
+  margin-left: auto;
+  margin-right: auto;
+  padding-top: 15%;
+  /* margin-top: 15%; */
+}
+
+#login_image_container{
+  margin: 0 auto;
+}
+
+#login_image{
+  display: flex; 
+  width: 250px; 
+  margin-left: auto; 
+  margin-right: auto;
+}
+
+/**************** Main Page ******************/
+#cards{
+  width: 100%; 
+  padding: 20px;
+}
+
+#room-card{
+  margin: 40px;
+  border-radius: 20px;
+  width: 22rem; 
+  height: 25rem;
+  display: inline-block;
+  border-width: 1;
+}
+
+#room-card-img{
+  height: 20px;
+  height: 15rem;
+  border-radius: 20px 20px 0px 0px;
+}
+
+#room-card-title{
+  font-size: 20px;
+  margin-top: 2px;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+#room-card-container{
+  height: fit-content;
+  background-color: #2F2F2F;
+  padding: 20px;
+  padding-left: 80px;
+}
+
+#delete-button{
+  color: rgb(126, 126, 126);
+  background-color: white;
+  position: relative;
+  font-size: 20px;
+}
+
+#room-btn-container{
+  text-align: center;
+  margin: 10px;
+}
+
+.btn-light{
+  padding: 7px 12px;
+  font-size: 15px;
+  border-radius: 15px;
+  background-color: rgb(236, 236, 236);
+  border-width: 0;
+}
+
+#modal-btn{
+  margin: auto;
+  display: block;
+  padding: 10px 15px;
+  border-radius: 20px;
+}
+
+
+#new_room{
+  position:relative;
+  /* border: 3px solid lightblue; */
+  left:28%;
+  top:10%;
+}
+
+#profile-header{
+  padding-top: 50px;
+  padding-bottom: 50px;
+  color: white;
+  text-align: center;
+  font-size: 30px;
+  font-weight: 100;
+}
+
+#profile-body{
+  text-align: center;
+}
+
+.profile-text{
+  color: white;
+  margin: 10px;
+  font-size: 20px;
+  font-weight: 200;
+}

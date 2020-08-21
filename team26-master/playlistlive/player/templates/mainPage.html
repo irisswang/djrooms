@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block header %}
+<div id="header_container">
+  <h1 id="id_name_of_page">
+    <img src='{% static "main-page-logo.png" %}' style="width:250px"/>
+  </h1>
+
+  <div class="dropdown">
+    <h2 id="id_profile_text">My Profile</h2>
+    <button id="id_show_nav_button" class="dropbtn">
+        <img id="button_drop" src="{% static 'profile.png' %}"/>
+    </button>
+    <div class="dropdown-content">
+      <a id="id_nav_profile" href="/player/profile/{{spotify_id}}">View Profile</a>        
+      <a id="id_nav_logout" href="/">Logout</a>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block content %}
+{% if messages %}
+  {% for message in messages %}
+    {% if message.tags %}  <script>alert("{{ message }}")</script> {% endif %}
+  {% endfor %}
+{% endif %}
+
+<div>
+  <button type="button" class="btn btn-light" id="modal-btn" data-toggle="modal" data-target="#exampleModalCenter">
+    + Create a New Room
+  </button>
+</div>
+
+<div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLongTitle">Enter the name of the new room</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form action="{% url 'new_room' %}" id="new_room" method="post">
+          {{form.as_table}}
+          {% csrf_token %}
+          <input id="room-name-submit" style="font-size:12px" class = "btn btn-primary" type="submit" class="btn1" value="Enter"/><br>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="cards">
+  
+  <div id="room-card-container">
+    {% for card in cards %}
+    <div class="card" id="room-card">
+      <img class="card-img-top" id="room-card-img" src="https://cdn.dribbble.com/users/278624/screenshots/4413242/playlist_cover2.png" alt="Card image cap">
+      <div class="card-body">
+        <h5 id= "room-card-title" class="card-title">{{card.name}}</h5>
+        <div id="room-btn-container">
+          <a href="{% url 'DJRoom' %}?name={{card.name}}" class="btn btn-light">Join</a>
+          {% if card.dj == user %}
+          <a href="{% url 'delete' %}?name={{card.name}}" id="delete-button" class="btn btn-sm">
+            <span style="font-size:20px" class="glyphicon glyphicon-trash"></span>
+          </a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+ 
+</div>
+
+
+{% endblock %}

@@ -1,0 +1,6 @@
+# ignore all . files
+.*
+!/.gitignore
+*.pyc
+*.ini
+*.sqlite3

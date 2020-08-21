@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block content %}
+<div id="login_container">
+    <div id="login_image_container">
+        <img src="{% static 'favicon.ico' %}" id="login_image"/>
+    </div>
+    <div id="signin-button-container">
+        {% csrf_token %}
+        <a id="signin-button" href="{% url 'sign-in' %}" role="button">
+            SIGN IN WITH SPOTIFY
+        </a>
+    </div>
+</div>
+{% endblock %}

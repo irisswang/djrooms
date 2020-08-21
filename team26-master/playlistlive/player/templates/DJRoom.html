@@ -1,0 +1,459 @@
+{% extends "base.html" %}
+
+{% load static %}
+{%block hidden %}
+<div hidden id="deviceid"></div>
+{%endblock%}
+
+{% block javascript %}
+<script src="{% static 'search.js'%}" type="text/javascript"></script>
+  <script src="{% static 'queue.js'%}" type="text/javascript"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+{% endblock %}
+
+{% block header %}
+<div id="header_container">
+  <span id="id_name_of_page">{{room_name}}</span>
+  <div hidden id = "user_dj">{{user_dj}}</div>
+  <div hidden id = "curr_user">{{user}}</div>
+  <div hidden id = "token"></div>
+  <div hidden id = "curr_queue"></div>
+  <div hidden id = "currsong-uri"></div>
+  <div hidden id = "currsong-pos"></div>
+  <div class="dropdown">
+    <h2 id="id_profile_text">My Profile</h2>
+    <button id="id_show_nav_button" class="dropbtn">
+        <img id="button_drop" src="{% static 'profile.png' %}"/>
+    </button>
+    <div class="dropdown-content">
+      <a id="id_nav_profile" href="/player/profile/{{user}}">View Profile</a>        
+      <a id="id_nav_logout" href="/">Logout</a>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div id="DJRoom_container">
+  <div id="card-container">
+    <div class="card text-center" style="width: 32rem;">
+      <img id="currsong-img" src="https://img.pngio.com/mix-todays-best-music-cover-art-png-500_500.png" class="card-img-top">
+      <div class="card-body">
+        <h5 id="currsong-title" class="card-title">Start Playing a Song</h5>
+        <p id="currsong-artist" class="card-text"> Go to your spotify player! </p>
+        <div class="progress">
+          <div id="currsong-progress" class="progress-bar bg-info" role="progressbar" style="width: 0%" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"></div>
+        </div>
+        {% if user_dj == user %}
+        <button type="button" id="play-pause-button" onclick="play_pause()" class="btn btn-default">
+          <span class="glyphicon glyphicon-play"></span>
+        </button>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div id="queue-container">
+    <a id="queue_title_box">Queue</a>
+    <div id="queue_songs">
+      <ul id="queue" class="list-group list-group-flush">
+      </ul>
+    </div>
+    <div id="queue_search_box">
+        {% if user_dj == user %}
+        <input type="text" name="search-box" id="id_search_input" onkeyup="searchFunction()"></input>
+        {% endif %}
+    </div>
+    <ul id="search_results"></ul>
+
+  </div>
+
+  <div id = "chat-container">
+    <a id="queue_title_box">Live Chat</a>
+    <textarea id="chat-log" cols="48" readonly rows="10"></textarea><br>
+    <input class="msg_input" id="chat-message-input" type="text" size="40"><br>
+    <input id="chat-message-submit" type="hidden">
+  </div>
+
+</div>
+{% endblock %}
+
+
+{% block js %}
+<script>
+
+  /*
+   * global variables to store states of the player
+   */
+  var currQueue = "";
+  var prevQueue = "";
+  var currState;
+  var chatSocket;
+
+  /*
+   * play_pause: triggered when the player's play/pause button is clicked
+   */
+  function play_pause(){
+
+    // is currently playing, want to pause
+    if (!currState.paused) {
+      player.pause().then(() => {
+        $("#play-pause-button").html('<span class="glyphicon glyphicon-play"></span>');
+        chatSocket.send(JSON.stringify({
+          'msg_type': 'pause',
+        }));
+      });
+    }
+
+    // is currently paused, want to play
+    else {
+      player.resume().then(() => {
+        $("#play-pause-button").html('<span class="glyphicon glyphicon-pause"></span>');
+        uri = document.getElementById("currsong-uri").textContent;
+        pos = document.getElementById('currsong-pos').textContent;
+        chatSocket.send(JSON.stringify({
+          'msg_type': 'chat_message',
+          'uris': [uri],
+          'position_ms': pos 
+        }));
+      })
+    }
+  }
+
+
+  /*
+   * Routine to call once Spotify Web Player SDK is ready
+   * (1) store the access token of the user
+   * (2) ensure player connection is secure
+   * (3) connect to socket once player is ready
+   * (4) continuously update web player state to current playing state
+   */
+  window.onSpotifyWebPlaybackSDKReady = () => {
+
+    // retrieve and store access token
+    const token = '{{access_token}}';
+    player = new Spotify.Player({
+      name: 'Playlist Live',
+      getOAuthToken: cb => { cb(token); }
+    });
+    $("#token").html(token);
+
+
+    // Error handling for
+    player.addListener('initialization_error', ({ message }) => { console.error(message); });
+    player.addListener('authentication_error', ({ message }) => { console.error(message); });
+    player.addListener('account_error', ({ message }) => { console.error(message); });
+    player.addListener('playback_error', ({ message }) => { console.error(message); });
+
+
+    // Ready
+    player.addListener('ready', ({ device_id }) => {
+      $("#deviceid").html(device_id);
+      connect_sockets();
+    });
+
+    // Not Ready
+    player.addListener('not_ready', ({ device_id }) => {
+      console.log('Device ID has gone offline', device_id);
+    });
+
+    // Connect to the player!
+    player.connect();
+    
+    var myVar;
+    var curr;  
+    var currTrack; 
+    
+    /*
+     * getCurrentState: retrieves current player state information from Spotify and 
+     * DJ sends message to listeners to update information if song or queue has changed
+     */
+    function getCurrentState(){
+      player.getCurrentState().then(state => {
+
+        is_new_song = false
+        is_new_queue = false
+        
+        if (!state) {
+          console.log('User is not playing music through the Web Playback SDK');
+          return;
+        }
+
+        let {
+          current_track,
+          next_tracks: next_tracks
+        } = state.track_window;
+
+        currState = state;
+
+        if ((currTrack != null) && (currTrack.id != current_track.id)) {
+          is_new_song = true
+        }
+
+        currTrack = current_track;
+
+        title = currTrack.name;
+        uri = currTrack.uri;
+        song_pos = currState.position;
+        artist = currTrack.artists[0].name;
+        album_img = currTrack.album.images[0].url;
+        currProgress = parseInt((currState.position / currTrack.duration_ms) * 100);
+
+        // update web player information 
+        $("#currsong-uri").html(uri);
+        $("#currsong-pos").html(song_pos);
+        $("#currsong-title").html(title);
+        $("#currsong-artist").html(artist);
+        $("#currsong-img").attr("src", album_img);
+        $("#currsong-progress").css("width", currProgress+"%");
+
+        // update play/pause button
+        if (!currState.paused) {
+          $("#play-pause-button").html('<span class="glyphicon glyphicon-pause"></span>');
+        }
+        if (currState.paused) {
+          $("#play-pause-button").html('<span class="glyphicon glyphicon-play"></span>');
+        }
+
+        // check if current user is a dj of the room 
+        const user_dj = document.getElementById('user_dj').textContent;
+        const curr_user = document.getElementById('curr_user').textContent;
+
+        if(user_dj == curr_user){
+
+          queue_tracks = ""
+
+          // accumulate current queue information
+          for (track of next_tracks) {
+            title = track.name;
+            artist = track.artists[0].name;
+            queue_tracks += '<li class="list-group-item">'+ title + " by " + artist + '</li>';
+            currQueue += '<li class="list-group-item">'+ title + " by " + artist + '</li>';
+          }
+          
+          // check if the queue has changed
+          if(prevQueue != currQueue){
+            is_new_queue = true;
+          }
+
+          $("#queue").html(queue_tracks);
+
+        }
+
+        // send updated queue info to listeners
+        if(is_new_queue){
+          sendCurrentQueue();
+        }
+
+        // send updated song info to listeners
+        if (is_new_song) {
+          sendCurrentState();
+        }
+
+        $('#curr_queue').html(currQueue);
+        
+        prevQueue = currQueue;
+        currQueue = "";
+
+      });
+
+    };
+    window.setInterval(getCurrentState, 500);
+
+    /*
+     * sendCurrentState: send a socket message about currently playing song
+     */
+    function sendCurrentState(){
+      uri = document.getElementById("currsong-uri").textContent;
+      pos = document.getElementById('currsong-pos').textContent;
+      message = uri
+      position = pos;
+      chatSocket.send(JSON.stringify({
+        'msg_type': 'default',
+        'uris': [uri],
+        'position_ms': pos
+      }));
+    }
+
+    /*
+     * sendCurrentQueue: send a socket message about current queue
+     */
+    function sendCurrentQueue(){
+      queuetracks = document.getElementById("queue").textContent;
+      queue = String(queuetracks)
+      chatSocket.send(JSON.stringify({
+        'msg_type': 'queue',
+        'queue': currQueue
+      }));
+    }
+
+  };
+
+
+  function connect_sockets() {
+    const roomName = document.getElementById('id_name_of_page').textContent;
+    const user_dj = document.getElementById('user_dj').textContent;
+    const curr_user = document.getElementById('curr_user').textContent;
+
+    // check if the current user is a dj
+    if (user_dj == curr_user){
+      dj = 1;
+    }
+    
+    else{
+      dj = 0;
+    }
+
+    // creating a new socket connection for a user entering a room
+    chatSocket = new WebSocket(
+      'wss://'
+      + window.location.host
+      + '/ws/DJRoom/'
+      + roomName
+      + '/'
+      + dj
+      + '/'
+    );
+
+    /*
+     * Routine to process information sent from a socket message
+     */
+    chatSocket.onmessage = function(msg) {
+
+      data = msg['data']
+
+      if(data.includes('chatting')){
+        data1 = JSON.parse(data);
+        document.querySelector('#chat-log').value += (data1.message + '\n');
+        return;
+      }
+
+      document.querySelector('#chat-message-input').focus();
+        document.querySelector('#chat-message-input').onkeyup = function(e) {
+            if (e.keyCode === 13) {  // enter, return
+                document.querySelector('#chat-message-submit').click();
+            }
+        };
+
+        document.querySelector('#chat-message-submit').onclick = function(e) {
+            const messageInputDom = document.querySelector('#chat-message-input');
+            const message = messageInputDom.value;
+            chatSocket.send(JSON.stringify({
+                'msg_type': "chatting",
+                'message': message
+            }));
+            messageInputDom.value = '';
+        };
+
+      if (dj == 0) {
+
+        token = document.getElementById('token').textContent;
+        devid = document.getElementById('deviceid').textContent;
+
+        if(data.includes('queue')){
+          queue_tracks = JSON.parse(data)
+          $("#queue").html(queue_tracks["queue"])
+        }
+
+        if (data == "pause"){
+
+          console.log("pausing...")
+
+          ajaxurl = "?device_id=" + String(devid)
+            $.ajax({
+              url: 'https://api.spotify.com/v1/me/player/pause' + ajaxurl,
+              method: "PUT",
+              headers: {
+                'Authorization': 'Bearer ' + String(token),        
+              },
+              success: function(data) {
+                console.log("successfully paused my playback")
+              },
+              dataType: 'JSON'
+            });
+        }
+
+        else if (data == "resume") {
+
+          console.log("resuming...")
+
+          ajaxurl = "?device_id=" + String(devid)
+            $.ajax({
+              url: 'https://api.spotify.com/v1/me/player/play' + ajaxurl,
+              method: "PUT",
+              headers: {
+                'Authorization': 'Bearer ' + String(token),        
+              },
+              success: function(data) {
+                console.log("successfully resumed my playback")
+              },
+              dataType: 'JSON'
+            });
+
+        }
+
+        else {
+
+          console.log("updating playback state...")
+
+          msg = JSON.parse(data);
+          delete msg.queue;
+          msg = JSON.stringify(msg)
+
+          ajaxurl = "?device_id=" + String(devid)
+          $.ajax({
+            url: 'https://api.spotify.com/v1/me/player/play' + ajaxurl,
+            method: "PUT",
+            headers: {
+              'Authorization': 'Bearer ' + String(token),        
+            },
+            contentType: 'application/json',
+            data: msg,
+            success: function(data) {
+              console.log("updated my playback")
+            },
+            dataType: 'JSON'
+          });
+        
+        }
+
+      }
+      else {
+
+        
+        if (data.includes('new_socket')) {
+
+          console.log(currState)
+
+          if (!currState.paused) {
+            data = JSON.parse(data)
+            uri = document.getElementById("currsong-uri").textContent;
+            pos = document.getElementById('currsong-pos').textContent;
+            curr_queue = document.getElementById('curr_queue').textContent;
+            q = String(curr_queue)
+
+            message = uri
+            position = pos;
+            chatSocket.send(JSON.stringify({
+              'msg_type': 'new_socket',
+              'socket_id': data['socket_id'],
+              'queue': prevQueue,
+              'uris': [uri],
+              'position_ms': pos,
+            }));
+          }
+        }
+      }
+    };
+    
+    chatSocket.onclose = function(e) {
+        console.error('Chat socket closed unexpectedly with', e);
+    };
+  }
+    
+
+
+</script>
+{% endblock %}
+
